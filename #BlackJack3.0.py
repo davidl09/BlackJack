@@ -6,11 +6,14 @@ import itertools
 import time
 
 def slow_print(delay, end, *args):
+    new_str = ""
     for arg in args:
         string = str(arg)
         for i in range(len(string)):
-            print(string[i], end="")
-            time.sleep(delay)
+            new_str += string[i]
+    for i in range(len(new_str)):
+        print(new_str[i], end="")
+        time.sleep(delay)
     if end == "\n":
         print("")
 
@@ -144,9 +147,12 @@ class Human(Player):
                 return self.place_bet()
 
     def hit(self):
-        if input("Enter 'h' to hit, or any other key to stand") == "h":
+        slow_print(0.03, "\n", "Enter 'h' to hit, or any other key to stand")
+        if input() == "h":
             return True
-        else: return False
+        else: 
+            slow_print(0.03, "\n", "Standing")
+            return False
 
     def print_balance(self):
         return slow_print(0.05, "\n", f"You currently have {self.chips} chips.")
@@ -167,7 +173,9 @@ class Dealer(Player):
    
 class Game:
     def __init__(self):
-        slow_print(0.02, "\n", "\n\n--------------Welcome to BlackJack--------------\n\n\nYou start with 100 chips.")
+        slow_print(0.03, "\n", "\n\n--------------Welcome to BlackJack--------------\n\n\n"
+        "Press enter after typing your response to the dealer. \nBe sure to read each prompt carefully. \nThe game is case sensitive, so don't use uppercase characters.\n\n"
+        "You start with 100 chips.")
         self.player = Human(100)
         self.dealer = Dealer()
         self.deck = Deck()
@@ -211,12 +219,13 @@ class Game:
             self.player.draw_card(self.deck.deal())
             if self.player.isBust == True:
                 slow_print(0.05, "\n", "You went over 21!")
+                self.player.print_score()
                 return self.player_loss()
             self.player.print_score()
 
         while self.dealer.ace_hand_score() < 17:
             self.dealer.draw_card(self.deck.deal())
-            slow_print(0.03, "\n", "Dealer draws...")
+            slow_print(0.1, "\n", "Dealer draws...")
             self.dealer.show_hand(True)
             if self.dealer.isBust == True:
                 slow_print(0.05, "\n", "Dealer Busts!")
@@ -238,9 +247,13 @@ class Game:
 
     def end_screen(self):
         self.player.is_broke()
-        if input("Press 'e' to exit the game, or any key to play again") == "e":
+        slow_print(0.03, "\n", "Press 'e' to exit the game, or any key to play again\n\n")
+        if input() == "e":
             exit()
-        else: self.init_round()
+        else:
+            for i in range(15):
+                print("\n") 
+            self.init_round()
 
     def player_wins(self):
         slow_print(0.03, "\n", f"You win this round! You had a score of {self.player.ace_hand_score()}, beating the Dealer's score of {self.dealer.ace_hand_score()}. You gained {self.bet_amt} chips.")
@@ -249,14 +262,15 @@ class Game:
         self.end_screen()
 
     def player_pass(self):
+        self.dealer.show_hand(True)
         slow_print(0.03, "\n", f"You had the same score as the dealer: {self.player.ace_hand_score()}. No chips lost")
         self.player.chips += self.bet_amt
         self.player.print_balance()
         self.end_screen()
    
     def player_loss(self):
-        self.player.print_score()
-        slow_print(0.02, "\n", f"You lost this round. You had a score of {self.player.ace_hand_score()}, worse than the Dealer's score of {self.dealer.ace_hand_score()}. You lost {self.bet_amt} chips.")
+        if not self.player.isBust:
+            slow_print(0.04, "\n", f"You lost this round. You had a score of {self.player.ace_hand_score()}, worse than the Dealer's score of {self.dealer.ace_hand_score()}. You lost {self.bet_amt} chips.")
         self.bet_amt = 0
         self.player.print_balance()
         self.end_screen()
